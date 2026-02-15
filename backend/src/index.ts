@@ -13,7 +13,7 @@ async function bootstrap() {
 
     // 3. Start Express Server
     const { port } = registry.server;
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0', () => {
       logger.info(`🚀 HashThis Backend running on port ${port}`);
       logger.info(`API Environment: ${registry.server.env}`);
       logger.info(`Target Network: ${registry.ckb.network}`);
