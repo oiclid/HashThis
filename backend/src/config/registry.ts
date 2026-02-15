@@ -1,12 +1,8 @@
 import dotenv from 'dotenv';
-
-// Pre-load environment variables
 dotenv.config();
 
 /**
- * The Registry is the immutable source of truth for the backend.
- * We parse and validate environment variables here to ensure 
- * the app fails fast if critical keys are missing.
+ * Registry serves as the immutable source of truth for the backend.
  */
 export const registry = {
   server: {
@@ -17,24 +13,24 @@ export const registry = {
   ckb: {
     rpcUrl: process.env.CKB_RPC_URL || 'https://testnet.ckb.dev/rpc',
     indexerUrl: process.env.CKB_INDEXER_URL || 'https://testnet.ckb.dev/indexer',
-    // We treat the private key as a sensitive string
     signerPrivKey: process.env.PRIVATE_KEY || '',
     network: (process.env.CKB_NETWORK || 'testnet') as 'testnet' | 'mainnet',
   },
-  security: {
+  // CHANGED: 'security' is now 'app' to match src/app.ts
+  app: {
     corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
     apiPrefix: '/api/v1',
   }
 };
 
 /**
- * Simple guard clause to be called during the bootstrap process.
+ * Validates critical environment variables.
  */
-export function assertEnvPolicy(): void {
-  const criticalKeys = ['PRIVATE_KEY', 'CKB_RPC_URL'];
-  const missing = criticalKeys.filter(k => !process.env[k]);
+export function checkEnvStability() {
+  const required = ['PRIVATE_KEY', 'CKB_RPC_URL'];
+  const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
-    throw new Error(`Bootstrap failed. Missing critical environment keys: ${missing.join(', ')}`);
+    throw new Error(`Environment Instability: Missing ${missing.join(', ')}`);
   }
 }
