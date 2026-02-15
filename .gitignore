@@ -1,0 +1,15 @@
+# Local Setup
+node_modules/
+dist/
+backend/.env
+backend/node_modules/
+frontend/node_modules/
+
+# Blockchain/Keys
+wallet/
+*.key
+*.pem
+
+# System
+.DS_Store
+logs/

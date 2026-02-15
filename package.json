@@ -1,0 +1,22 @@
+{
+  "name": "hashthis-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blockchain-based data integrity toolkit using Nervos CKB",
+  "author": "oïclid",
+  "license": "MIT",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w frontend -w backend",
+    "test": "npm test -w frontend -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3",
+    "prettier": "^3.1.0"
+  }
+}
