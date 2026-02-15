@@ -13,3 +13,4 @@ wallet/
 # System
 .DS_Store
 logs/
+instructions.md

@@ -1,13 +1,16 @@
 # Milestone 2: Blockchain Integration & Cell Logic
-**Date:** 2024-05-20
-**Status:** 🚧 In Progress
+**Date:** 2026-02-07
+**Status:** ✅ Completed
 
 ## Objectives
 - [x] Initialize Lumos SDK with Aggron4 (Testnet) presets.
-- [ ] Implement `encodeHashData` for cell serialization.
-- [ ] Build `submitHash` transaction skeleton.
-- [ ] verify transaction signing with local private key.
+- [x] Implement `encodeHashData` for cell serialization.
+- [x] Build `submitHash` transaction skeleton.
+- [x] Verify transaction signing with local private key.
 
-## Technical Challenges
-- **Cell Model:** Adapting the abstract cell model to store simple SHA-256 hashes requires strict capacity management (CKByte/Shannons).
-- **Indexer Latency:** Ensuring the indexer is synced before querying live cells.
+## Implementation Details
+Successfully implemented the `CKBService` which can now:
+1.  Connect to Aggron4.
+2.  Serialize File Hash + Timestamp into a Hex String.
+3.  Inject Capacity (Inputs) and define Outputs (Data Cell).
+4.  Sign and Broadcast transactions.
