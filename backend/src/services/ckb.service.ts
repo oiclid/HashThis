@@ -5,7 +5,7 @@ import { logger } from "../utils/logger.js";
 import { HashPayload, SubmissionResult } from "../types/index.js";
 
 // 110 CKB in shannons — 101 CKB minimum (cell + data) plus headroom
-const ANCHOR_CAPACITY = BigInt("11000000000"); // 110 CKB — covers 101 CKB min cell + data
+const ANCHOR_CAPACITY = BigInt("11000000000");
 
 export class CKBService {
   private rpc: RPC;
@@ -17,6 +17,9 @@ export class CKBService {
     this.indexer = new Indexer(registry.ckb.indexerUrl);
   }
 
+  /**
+   * Initializes the Lumos configuration for the Aggron4 Testnet.
+   */
   public async start() {
     if (this.isInitialized) return;
     try {
@@ -28,12 +31,14 @@ export class CKBService {
     }
   }
 
+  /**
+   * Anchors a file hash to the blockchain by creating a new cell.
+   */
   public async submitHash(payload: HashPayload): Promise<SubmissionResult> {
     if (!this.isInitialized) await this.start();
 
     const testnetConfig = config.predefined.AGGRON4;
-    const scriptConfig = testnetConfig.SCRIPTS.SECP256K1_BLAKE160 ||
-                         testnetConfig.SCRIPTS.SECP256K1_BLAKE160_SIGHASH_ALL;
+    const scriptConfig = testnetConfig.SCRIPTS.SECP256K1_BLAKE160;
 
     if (!scriptConfig) {
       throw new Error("CKB Script configuration not found for Testnet.");
@@ -60,10 +65,10 @@ export class CKBService {
 
     let txSkeleton = TransactionSkeleton({ cellProvider: this.indexer });
 
-    // output cell with the hash data embedded
+    // Define output cell with the hash data embedded
     const anchorCell: Cell = {
       cellOutput: {
-        capacity: "0x28fa6ae00", // 110 CKB in shannons,
+        capacity: "0x28fa6ae00", // 110 CKB in shannons
         lock: lockScript,
       },
       data: encodedData,
@@ -71,11 +76,12 @@ export class CKBService {
 
     txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(anchorCell));
 
-    // fix the output so lumos doesn't treat it as a free-to-adjust change cell
+    // Fix the output so lumos doesn't treat it as a free-to-adjust change cell
     txSkeleton = txSkeleton.update("fixedEntries", (entries) =>
       entries.push({ field: "outputs", index: 0 })
     );
 
+    // Add cell dependencies
     txSkeleton = txSkeleton.update("cellDeps", (cellDeps) =>
       cellDeps.push({
         outPoint: {
@@ -86,15 +92,15 @@ export class CKBService {
       })
     );
 
-    // collect enough inputs to cover the anchor cell + fees, change goes back to sender
+    // Collect enough inputs to cover the anchor cell + fees, change goes back to sender
     txSkeleton = await commons.common.injectCapacity(
       txSkeleton,
       [fromAddress],
       ANCHOR_CAPACITY,
-      undefined,
       { config: testnetConfig }
     );
 
+    // Pay network fees
     txSkeleton = await commons.common.payFeeByFeeRate(
       txSkeleton,
       [fromAddress],
@@ -103,6 +109,7 @@ export class CKBService {
       { config: testnetConfig }
     );
 
+    // Prepare signing entries (must be called exactly once after all tx building is done)
     txSkeleton = commons.common.prepareSigningEntries(txSkeleton, { config: testnetConfig });
 
     const signingEntries = txSkeleton.get("signingEntries");
@@ -122,12 +129,14 @@ export class CKBService {
     };
   }
 
+  /**
+   * Scans the blockchain for a specific file hash.
+   */
   public async verifyHash(fileHash: string): Promise<{ timestamp: string; blockNumber: string } | null> {
     if (!this.isInitialized) await this.start();
 
     const testnetConfig = config.predefined.AGGRON4;
-    const scriptConfig = testnetConfig.SCRIPTS.SECP256K1_BLAKE160 ||
-                         testnetConfig.SCRIPTS.SECP256K1_BLAKE160_SIGHASH_ALL;
+    const scriptConfig = testnetConfig.SCRIPTS.SECP256K1_BLAKE160;
 
     const privKey = registry.ckb.signerPrivKey;
     const pubKey = hd.key.privateToPublic(privKey);
