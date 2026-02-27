@@ -73,15 +73,12 @@ class CKBService {
     try {
       const signer = this.getSigner();
       const addressObj = await signer.getRecommendedAddressObj();
-      
-      // Convert to CCC Script format
-      const lockScript = ccc.Script.from(addressObj.script);
 
       const cleanSearchHash = fileHash.startsWith('0x') ? fileHash.slice(2) : fileHash;
       console.log(`[CKB] Searching for hash: ${cleanSearchHash}`);
 
-      // findCellsByLock expects ccc.Script format
-      for await (const cell of this.client.findCellsByLock(lockScript, "asc")) {
+      // Pass script directly without conversion - TypeScript should accept it as ScriptLike
+      for await (const cell of this.client.findCellsByLock(addressObj.script as any, "asc")) {
         const cellData = cell.outputData || '';
         if (cellData.includes(cleanSearchHash)) {
           const decoded = this.decodeHashData(cellData);
