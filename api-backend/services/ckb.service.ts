@@ -81,8 +81,20 @@ class CKBService {
       const cellIterator = (this.client.findCellsByLock as any)(addressObj.script, "asc");
       
       for await (const cell of cellIterator) {
-        const cellData = cell.outputData || '';
+        console.log('[CKB] Found cell, checking data...');
+        
+        // Safely get outputData - it might be undefined
+        const cellData = cell.outputData;
+        
+        if (!cellData) {
+          console.log('[CKB] Cell has no outputData, skipping');
+          continue;
+        }
+        
+        console.log('[CKB] Cell data:', cellData);
+        
         if (cellData.includes(cleanSearchHash)) {
+          console.log('[CKB] Match found!');
           const decoded = this.decodeHashData(cellData);
           
           // Get block number from transaction if available
@@ -105,9 +117,11 @@ class CKBService {
         }
       }
 
+      console.log('[CKB] No matching hash found');
       return null;
     } catch (error: any) {
       console.error("[CKB] Verify failed:", error.message);
+      console.error("[CKB] Full error:", error);
       throw new Error(`Failed to verify hash: ${error.message}`);
     }
   }
