@@ -77,13 +77,11 @@ class CKBService {
       const cleanSearchHash = fileHash.startsWith('0x') ? fileHash.slice(2) : fileHash;
       console.log(`[CKB] Searching for hash: ${cleanSearchHash}`);
 
-      // Use type assertion on the method call itself
       const cellIterator = (this.client.findCellsByLock as any)(addressObj.script, "asc");
       
       for await (const cell of cellIterator) {
         console.log('[CKB] Found cell, checking data...');
         
-        // Safely get outputData - it might be undefined
         const cellData = cell.outputData;
         
         if (!cellData) {
@@ -97,7 +95,6 @@ class CKBService {
           console.log('[CKB] Match found!');
           const decoded = this.decodeHashData(cellData);
           
-          // Get block number from transaction if available
           let blockNum = 'unknown';
           try {
             if (cell.outPoint?.txHash) {
