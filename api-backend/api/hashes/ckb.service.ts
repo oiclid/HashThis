@@ -76,15 +76,13 @@ class CKBService {
       const cleanSearchHash = fileHash.startsWith('0x') ? fileHash.slice(2) : fileHash;
       console.log(`[CKB] Searching for hash: ${cleanSearchHash}`);
 
-      // Get all transactions sent by this signer
-      const addressObj = await signer.getRecommendedAddressObj();
-      const address = addressObj.address;
+      // Get address as string
+      const address = await signer.getRecommendedAddress();
       
       console.log(`[CKB] Searching transactions for address: ${address}`);
 
-      // Use findTransactions instead of findCellsByLock
-      let found = false;
-      for await (const tx of this.client.findTransactions(address, "asc", "lock")) {
+      // Use findTransactions with address string
+      for await (const tx of this.client.findTransactions(address)) {
         console.log('[CKB] Checking transaction:', tx.txHash);
         
         // Get full transaction details
