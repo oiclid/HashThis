@@ -8,6 +8,7 @@ type SubmitStatus = "idle" | "hashing" | "signing" | "broadcasting" | "success" 
 
 export const SubmitPage = () => {
   const { signer, open } = useCcc();
+  console.log("signer:", signer);
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [walletAddress, setWalletAddress] = useState("");
   const [txHash, setTxHash] = useState("");
