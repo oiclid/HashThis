@@ -39,4 +39,4 @@ export const api = {
       return { status: "offline" };
     }
   },
-};
+};grep -n "userAddress" /home/oiclid/code/hash/api-backend/api/hashes/ckb.service.ts
