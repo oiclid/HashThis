@@ -46,7 +46,7 @@ export class CKBService {
     logger.info(`Built unsigned tx for ${userAddress} — hash: ${fileHash}`);
 
     return {
-      outputs: [{ lock: userScript, capacity: ccc.numLeToHex(ANCHOR_CAPACITY) }],
+      outputs: [{ lock: userScript, capacity: ccc.numToHex(ANCHOR_CAPACITY) }],
       outputsData: [encodedData],
     };
   }
@@ -66,7 +66,7 @@ export class CKBService {
       const encodedData = this.encodeHashData(payload.fileHash);
 
       const tx = ccc.Transaction.from({
-        outputs: [{ lock: addressObj.script, capacity: ccc.numLeToHex(ANCHOR_CAPACITY) }],
+        outputs: [{ lock: addressObj.script, capacity: ccc.numToHex(ANCHOR_CAPACITY) }],
         outputsData: [encodedData],
       });
 
@@ -94,9 +94,18 @@ export class CKBService {
 
       logger.info(`Searching for hash: ${cleanSearchHash}`);
 
-      const collector = this.client.findCellsByLock(addressObj.script, "asc");
+      const cells: any[] = [];
+      try {
+        const iterator: any = this.client.findCells(
+          { script: addressObj.script, scriptType: "lock", scriptSearchMode: "exact" },
+          "asc"
+        );
+        for await (const cell of iterator) cells.push(cell);
+      } catch (e: any) {
+        logger.info(`findCells error: ${e.message}`);
+      }
 
-      for await (const cell of collector.collect()) {
+      for (const cell of cells) {
         const cellData = cell.outputData || "";
         if (!cellData.includes(cleanSearchHash)) continue;
 
