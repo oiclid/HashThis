@@ -1,6 +1,6 @@
 import { ccc } from "@ckb-ccc/core";
 
-const ANCHOR_CAPACITY = BigInt("11000000000"); // 110 CKB in shannons
+const ANCHOR_CAPACITY = BigInt("9500000000"); // 95 CKB in shannons (reduced from 110 CKB)
 
 // Timestamp is intentionally absent — always derived server-side.
 interface HashPayload {
@@ -184,7 +184,7 @@ class CKBService {
     console.log(`[CKB] Transaction committed in block: ${txStatus.blockHash}`);
 
     // Fetch the block header to get the timestamp
-    const block = await this.client.getBlock(txStatus.blockHash);
+    const block = await this.client.getBlockByHash(txStatus.blockHash);
     
     if (!block || !block.header) {
       throw new Error("Failed to fetch block header");
@@ -215,11 +215,11 @@ class CKBService {
   ): Promise<{ blockHash: string; status: string } | null> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const txStatus = await this.client.getTransaction(txHash);
+        const txResponse = await this.client.getTransaction(txHash);
         
-        if (txStatus && txStatus.txStatus?.status === "committed") {
+        if (txResponse && txResponse.status === "committed") {
           return {
-            blockHash: txStatus.txStatus.blockHash || "",
+            blockHash: txResponse.blockHash || "",
             status: "committed",
           };
         }
