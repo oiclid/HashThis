@@ -3,8 +3,8 @@ import { registry } from "../config/registry.js";
 import { logger } from "../utils/logger.js";
 import { HashPayload, SubmissionResult, UnsignedTxPayload, UnsignedTxResult } from "../types/index.js";
 
-// 110 CKB in shannons — 101 CKB minimum (cell + data) plus headroom for fees
-const ANCHOR_CAPACITY = BigInt("11000000000");
+// 95 CKB in shannons — minimum capacity for cell with 32-byte data + standard lock
+const ANCHOR_CAPACITY = BigInt("9500000000");
 
 export class CKBService {
   private client: ccc.Client;
@@ -60,7 +60,7 @@ export class CKBService {
 
     try {
       const addressObj = await this.signer.getRecommendedAddressObj();
-      logger.info(`Building transaction for address: ${addressObj.address}`);
+      logger.info(`Building transaction for address: ${addressObj.toString()}`);
 
       // Encode only the hash — no timestamp in cell data
       const encodedData = this.encodeHashData(payload.fileHash);
@@ -166,7 +166,7 @@ export class CKBService {
     logger.info(`Transaction committed in block: ${txStatus.blockHash}`);
 
     // Fetch the block header to get the timestamp
-    const block = await this.client.getBlock(txStatus.blockHash);
+    const block = await this.client.getBlockByHash(txStatus.blockHash);
     
     if (!block || !block.header) {
       throw new Error("Failed to fetch block header");
@@ -197,11 +197,11 @@ export class CKBService {
   ): Promise<{ blockHash: string; status: string } | null> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const txStatus = await this.client.getTransaction(txHash);
+        const txResponse = await this.client.getTransaction(txHash);
         
-        if (txStatus && txStatus.txStatus?.status === "committed") {
+        if (txResponse && txResponse.status === "committed") {
           return {
-            blockHash: txStatus.txStatus.blockHash || "",
+            blockHash: txResponse.blockHash || "",
             status: "committed",
           };
         }
