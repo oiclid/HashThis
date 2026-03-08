@@ -42,7 +42,7 @@ export function formatTimestamp(isoString: string): FormattedTimestamp {
       minute: '2-digit',
       second: '2-digit',
       timeZone: 'UTC',
-      hour12: false,
+      hourCycle: 'h23',
     }),
     iso: isoString,
   };
